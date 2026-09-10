@@ -1,0 +1,69 @@
+Claude Code prompt-cache TTL advisor
+Transcripts: /Users/abarnesalpinesg.com/.claude/projects
+Window: all time
+Prices: first-party API rates, snapshot 2026-09-10 (override with --price)
+
+========================================================================
+MAIN  (102 chains, 18488 requests)
+========================================================================
+Data span: 2026-06-29 -> 2026-09-10 (73 days)
+Gap to previous request in the same chain:
+  < 5 min   (both TTLs hit)                    17226   93.2%
+  5-60 min  (only 1h hits)                       905    4.9%
+  >= 60 min or first request (both miss)         357    1.9%
+Observed TTL on cache writes: 1h: 18375, 5m: 68, none: 45
+
+Simulated input-side cost (uncached input + cache writes + cache reads):
+  model                    reqs       5m TTL       1h TTL     1h - 5m   warm-gap hits (tokens)
+  claude-fable-5           8144    $4,271.00    $3,295.71     -975.28   353 (116.9M)
+  claude-fable-5-1         4060    $2,449.54      $904.02    -1545.52   312 (141.5M)
+  claude-opus-5            3094      $693.13      $628.36      -64.77   79 (26.2M)
+  claude-sonnet-5          3063      $468.19      $351.95     -116.24   141 (63.9M)
+  claude-opus-4-8            99      $100.03       $81.17      -18.87   10 (6.5M)
+  TOTAL                            $7,981.89    $5,261.21    -2720.68
+  skipped (no price known): {'<synthetic>': 28}
+
+Confidence: high
+Recommendation: 1h  (saves 34.1% of input-side cost vs the other TTL)
+
+========================================================================
+SUBAGENT  (536 chains, 49620 requests)
+========================================================================
+Data span: 2026-08-06 -> 2026-09-10 (34 days)
+Gap to previous request in the same chain:
+  < 5 min   (both TTLs hit)                    48589   97.9%
+  5-60 min  (only 1h hits)                       435    0.9%
+  >= 60 min or first request (both miss)         596    1.2%
+Observed TTL on cache writes: 5m: 49520, 1h: 52, none: 48
+
+Simulated input-side cost (uncached input + cache writes + cache reads):
+  model                    reqs       5m TTL       1h TTL     1h - 5m   warm-gap hits (tokens)
+  claude-opus-5           29297    $3,033.33    $2,997.85      -35.48   242 (45.2M)
+  claude-fable-5           1989    $1,208.94    $1,124.65      -84.29   22 (11.7M)
+  claude-sonnet-5         17915      $959.35      $927.32      -32.03   165 (40.9M)
+  claude-opus-4-8            76       $36.45       $36.83       +0.38   0 (0.0M)
+  claude-fable-5-1          166       $24.98       $32.51       +7.54   0 (0.0M)
+  claude-haiku-4-5-20251001    163        $1.82        $2.33       +0.52   0 (0.0M)
+  TOTAL                            $5,264.87    $5,121.50     -143.37
+  skipped (no price known): {'<synthetic>': 14}
+
+Confidence: high
+Recommendation: either TTL (difference 2.7%, under the 5% threshold). Keep the default.
+
+------------------------------------------------------------------------
+To apply, add to ~/.claude/settings.json (user) or .claude/settings.json (project):
+
+{
+  "promptCacheTtl": "1h"
+}
+
+Or as environment variables:
+  export CLAUDE_CODE_PROMPT_CACHE_TTL=1h
+
+Requires Claude Code 2.1.242 or later. Docs: https://code.claude.com/docs/en/prompt-caching
+
+Caveats: dollar figures are API-rate equivalents of your token traffic (on a Claude
+subscription they describe plan usage, not a bill). Output tokens are excluded because
+they cost the same under either TTL. Claude Code deletes transcripts older than
+cleanupPeriodDays (default 30), which caps how far back this can look. The transcript
+format is internal to Claude Code and may change between releases.
